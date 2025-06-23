@@ -1,44 +1,50 @@
 package br.com.erudio.services.impl;
 
+import br.com.erudio.data.dto.PersonDTO;
 import br.com.erudio.exception.ResourceNotFoundException;
+import static br.com.erudio.mapper.ObjectMapper.parseListObjects;
+import static br.com.erudio.mapper.ObjectMapper.parseObject;
 import br.com.erudio.model.Person;
 import br.com.erudio.repository.PersonRepository;
 import br.com.erudio.services.PersonServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 @Service
 public class PersonServicesImpl implements PersonServices {
 
-    private Logger logger = Logger.getLogger(PersonServices.class.getName());
+    private Logger logger = LoggerFactory.getLogger(PersonServices.class.getName());
+
     @Autowired
     private PersonRepository personRepository;
 
 
     @Override
-    public List<Person> findAll() {
+    public List<PersonDTO> findAll() {
         logger.info("Finding all People");
-        return personRepository.findAll();
+        return parseListObjects( personRepository.findAll(), PersonDTO.class );
     }
 
     @Override
-    public Person findById(Long id) {
-        logger.info("Finding by ID!");
-        return personRepository.findById(id)
+    public PersonDTO findById(Long id) {
+        logger.info("Finding one Person!");
+        var entity = personRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("No records found for this ID!"));
+        return parseObject(entity, PersonDTO.class);
     }
 
     @Override
-    public Person create(Person person) {
+    public PersonDTO create(PersonDTO person) {
         logger.info("Created person");
-        return personRepository.save(person);
+        return parseObject(personRepository.save(parseObject(person, Person.class)), PersonDTO.class);
     }
 
     @Override
-    public Person update(Person person) {
+    public PersonDTO update(PersonDTO person) {
         logger.info("Update person");
        Person entity = personRepository.findById(person.getId())
                .orElseThrow(()-> new ResourceNotFoundException("No records found for this ID!"));
@@ -48,7 +54,7 @@ public class PersonServicesImpl implements PersonServices {
        entity.setAddress(person.getAddress());
        entity.setGender(person.getGender());
 
-        return personRepository.save(entity);
+        return parseObject(personRepository.save(entity), PersonDTO.class);
     }
 
     @Override

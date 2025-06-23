@@ -1,18 +1,19 @@
 package br.com.erudio.services;
 
+import br.com.erudio.data.dto.PersonDTO;
 import br.com.erudio.model.Person;
 
 import java.util.List;
 
 public interface PersonServices {
 
-    List<Person> findAll();
+    List<PersonDTO> findAll();
 
-    Person findById(Long id);
+    PersonDTO findById(Long id);
 
-    Person create(Person person);
+    PersonDTO create(PersonDTO person);
 
-    Person update(Person person);
+    PersonDTO update(PersonDTO person);
 
     void delete(Long id);
 }
