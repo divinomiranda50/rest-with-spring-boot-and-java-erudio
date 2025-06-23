@@ -1,9 +1,12 @@
 package br.com.erudio.services.impl;
 
-import br.com.erudio.data.dto.PersonDTO;
+import br.com.erudio.data.dto.v1.PersonDTO;
+import br.com.erudio.data.dto.v2.PersonDTOV2;
 import br.com.erudio.exception.ResourceNotFoundException;
 import static br.com.erudio.mapper.ObjectMapper.parseListObjects;
 import static br.com.erudio.mapper.ObjectMapper.parseObject;
+
+import br.com.erudio.mapper.custom.PersonMapper;
 import br.com.erudio.model.Person;
 import br.com.erudio.repository.PersonRepository;
 import br.com.erudio.services.PersonServices;
@@ -22,6 +25,8 @@ public class PersonServicesImpl implements PersonServices {
     @Autowired
     private PersonRepository personRepository;
 
+    @Autowired
+    private PersonMapper converter;
 
     @Override
     public List<PersonDTO> findAll() {
@@ -41,6 +46,12 @@ public class PersonServicesImpl implements PersonServices {
     public PersonDTO create(PersonDTO person) {
         logger.info("Created person");
         return parseObject(personRepository.save(parseObject(person, Person.class)), PersonDTO.class);
+    }
+
+    @Override
+    public PersonDTOV2 createV2(PersonDTOV2 person) {
+        logger.info("Created person");
+        return converter.convertEntityToDTO(personRepository.save(converter.convertDTOToEntity(person)));
     }
 
     @Override
