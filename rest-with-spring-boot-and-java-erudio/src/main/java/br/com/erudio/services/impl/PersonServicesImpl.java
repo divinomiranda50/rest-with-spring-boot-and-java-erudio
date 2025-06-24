@@ -49,12 +49,6 @@ public class PersonServicesImpl implements PersonServices {
     }
 
     @Override
-    public PersonDTOV2 createV2(PersonDTOV2 person) {
-        logger.info("Created person");
-        return converter.convertEntityToDTO(personRepository.save(converter.convertDTOToEntity(person)));
-    }
-
-    @Override
     public PersonDTO update(PersonDTO person) {
         logger.info("Update person");
        Person entity = personRepository.findById(person.getId())

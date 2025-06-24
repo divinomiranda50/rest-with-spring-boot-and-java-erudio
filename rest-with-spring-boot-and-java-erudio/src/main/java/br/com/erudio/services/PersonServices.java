@@ -13,8 +13,6 @@ public interface PersonServices {
 
     PersonDTO create(PersonDTO person);
 
-    PersonDTOV2 createV2(PersonDTOV2 person);
-
     PersonDTO update(PersonDTO person);
 
     void delete(Long id);
