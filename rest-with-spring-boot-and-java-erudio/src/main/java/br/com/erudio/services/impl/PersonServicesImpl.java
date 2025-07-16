@@ -1,7 +1,7 @@
 package br.com.erudio.services.impl;
 
+import br.com.erudio.controllers.PersonController;
 import br.com.erudio.data.dto.v1.PersonDTO;
-import br.com.erudio.data.dto.v2.PersonDTOV2;
 import br.com.erudio.exception.ResourceNotFoundException;
 import static br.com.erudio.mapper.ObjectMapper.parseListObjects;
 import static br.com.erudio.mapper.ObjectMapper.parseObject;
@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
@@ -31,7 +33,9 @@ public class PersonServicesImpl implements PersonServices {
     @Override
     public List<PersonDTO> findAll() {
         logger.info("Finding all People");
-        return parseListObjects( personRepository.findAll(), PersonDTO.class );
+        var persons = parseListObjects( personRepository.findAll(), PersonDTO.class );
+        persons.forEach(this::addHateoasLinks);
+        return persons;
     }
 
     @Override
@@ -39,13 +43,17 @@ public class PersonServicesImpl implements PersonServices {
         logger.info("Finding one Person!");
         var entity = personRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("No records found for this ID!"));
-        return parseObject(entity, PersonDTO.class);
+        var dto = parseObject(entity, PersonDTO.class);
+        addHateoasLinks(dto);
+        return dto;
     }
 
     @Override
     public PersonDTO create(PersonDTO person) {
         logger.info("Created person");
-        return parseObject(personRepository.save(parseObject(person, Person.class)), PersonDTO.class);
+        var dto = parseObject(personRepository.save(parseObject(person, Person.class)), PersonDTO.class);
+        addHateoasLinks(dto);
+        return dto;
     }
 
     @Override
@@ -59,7 +67,9 @@ public class PersonServicesImpl implements PersonServices {
        entity.setAddress(person.getAddress());
        entity.setGender(person.getGender());
 
-        return parseObject(personRepository.save(entity), PersonDTO.class);
+        var dto = parseObject(personRepository.save(entity), PersonDTO.class);
+        addHateoasLinks(dto);
+        return dto;
     }
 
     @Override
@@ -69,4 +79,15 @@ public class PersonServicesImpl implements PersonServices {
                 .orElseThrow(()-> new ResourceNotFoundException("No records found for this ID!"));
         personRepository.delete(entity);
     }
+
+    private void addHateoasLinks(PersonDTO dto) {
+        dto.add(linkTo(methodOn(PersonController.class).findById(dto.getId())).withSelfRel().withType("GET"));
+
+        dto.add(linkTo(methodOn(PersonController.class).delete(dto.getId())).withRel("delete").withType("DELETE"));
+
+        dto.add(linkTo(methodOn(PersonController.class).findAll()).withRel("findAll").withType("GET"));
+        dto.add(linkTo(methodOn(PersonController.class).create(dto)).withRel("craete").withType("POST"));
+        dto.add(linkTo(methodOn(PersonController.class).create(dto)).withRel("update").withType("PUT"));
+    }
+
 }
