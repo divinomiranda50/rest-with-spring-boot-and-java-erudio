@@ -2,6 +2,7 @@ package br.com.erudio.services.impl;
 
 import br.com.erudio.controllers.PersonController;
 import br.com.erudio.data.dto.v1.PersonDTO;
+import br.com.erudio.exception.RequiredObjectIsNullException;
 import br.com.erudio.exception.ResourceNotFoundException;
 import static br.com.erudio.mapper.ObjectMapper.parseListObjects;
 import static br.com.erudio.mapper.ObjectMapper.parseObject;
@@ -50,6 +51,7 @@ public class PersonServicesImpl implements PersonServices {
 
     @Override
     public PersonDTO create(PersonDTO person) {
+        if (person == null) throw new RequiredObjectIsNullException();
         logger.info("Created person");
         var dto = parseObject(personRepository.save(parseObject(person, Person.class)), PersonDTO.class);
         addHateoasLinks(dto);
@@ -58,6 +60,7 @@ public class PersonServicesImpl implements PersonServices {
 
     @Override
     public PersonDTO update(PersonDTO person) {
+        if (person == null) throw new RequiredObjectIsNullException();
         logger.info("Update person");
        Person entity = personRepository.findById(person.getId())
                .orElseThrow(()-> new ResourceNotFoundException("No records found for this ID!"));
